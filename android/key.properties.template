@@ -1,4 +1,4 @@
-storePassword=YOUR_KEYSTORE_PASSWORD
-keyPassword=YOUR_KEY_PASSWORD
+storePassword=khan3A1()
+keyPassword=khan3A1()
 keyAlias=aivellum-key
 storeFile=../keystore/aivellum-keystore.jks
