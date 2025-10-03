@@ -5,6 +5,8 @@ import 'constants/app_theme.dart';
 import 'providers/app_provider.dart';
 import 'screens/main_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/about_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +28,8 @@ class AivellumProApp extends StatelessWidget {
         home: const SplashScreen(),
         routes: {
           '/main': (context) => const MainScreen(),
+          '/onboarding': (context) => const OnboardingScreen(),
+          '/about': (context) => const AboutScreen(),
         },
       ),
     );

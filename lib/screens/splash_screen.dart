@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 import '../providers/app_provider.dart';
 
@@ -65,7 +66,16 @@ class _SplashScreenState extends State<SplashScreen>
     
     if (mounted) {
       await Future.delayed(const Duration(milliseconds: 1200));
-      Navigator.of(context).pushReplacementNamed('/main');
+      
+      // Check if onboarding is completed
+      final prefs = await SharedPreferences.getInstance();
+      final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+      
+      if (onboardingCompleted) {
+        Navigator.of(context).pushReplacementNamed('/main');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/onboarding');
+      }
     }
   }
 
