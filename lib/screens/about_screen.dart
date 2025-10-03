@@ -177,18 +177,15 @@ class _AboutScreenState extends State<AboutScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () async {
-                            final Uri emailUri = Uri(
-                              scheme: 'mailto',
-                              path: 'khanbasharat3a1@gmail.com',
-                              query: 'subject=Aivellum Pro - Feedback&body=Hello Khan,\n\n',
-                            );
-                            if (await canLaunchUrl(emailUri)) {
-                              await launchUrl(emailUri);
-                            } else {
+                            try {
+                              final Uri emailUri = Uri.parse('mailto:khanbasharat3a1@gmail.com?subject=Aivellum Pro - Feedback&body=Hello Khan,%0A%0A');
+                              await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+                            } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Could not open email app'),
-                                  backgroundColor: AppConstants.errorColor,
+                                  content: Text('Email: khanbasharat3a1@gmail.com'),
+                                  backgroundColor: AppConstants.infoColor,
+                                  duration: Duration(seconds: 3),
                                 ),
                               );
                             }
