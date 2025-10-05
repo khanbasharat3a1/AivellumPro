@@ -7,6 +7,8 @@ import 'screens/main_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/about_screen.dart';
+import 'screens/prompt_detail_screen.dart';
+import 'models/prompt.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +32,15 @@ class AivellumProApp extends StatelessWidget {
           '/main': (context) => const MainScreen(),
           '/onboarding': (context) => const OnboardingScreen(),
           '/about': (context) => const AboutScreen(),
+        },
+        onGenerateRoute: (settings) {
+          if (settings.name == '/prompt-detail') {
+            final prompt = settings.arguments as Prompt;
+            return MaterialPageRoute(
+              builder: (context) => PromptDetailScreen(prompt: prompt),
+            );
+          }
+          return null;
         },
       ),
     );

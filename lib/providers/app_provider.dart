@@ -144,10 +144,15 @@ class AppProvider with ChangeNotifier {
 
   // Favorites
   List<Prompt> get favoritePrompts => _dataService.getFavoritePrompts();
+  List<String> get favoritePromptIds => _dataService.getFavoritePromptIds();
 
   Future<void> toggleFavorite(String promptId) async {
     await _dataService.toggleFavorite(promptId);
     notifyListeners();
+  }
+
+  bool isFavorite(String promptId) {
+    return _dataService.getFavoritePromptIds().contains(promptId);
   }
 
   // Premium features
@@ -226,5 +231,10 @@ class AppProvider with ChangeNotifier {
   Future<void> restorePurchases() async {
     // Nothing to restore in Pro version
     print('No purchases to restore in Pro version');
+  }
+
+  // Add method to get favorite prompt IDs for Consumer widgets
+  List<String> getFavoritePromptIds() {
+    return _dataService.getFavoritePromptIds();
   }
 }

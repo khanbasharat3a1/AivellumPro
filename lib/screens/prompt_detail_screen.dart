@@ -3,473 +3,535 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../constants/app_constants.dart';
-import '../models/prompt.dart';
 import '../providers/app_provider.dart';
+import '../models/prompt.dart';
+import '../utils/app_utils.dart';
 
-class PromptDetailScreen extends StatelessWidget {
+class PromptDetailScreen extends StatefulWidget {
   final Prompt prompt;
 
-  const PromptDetailScreen({
-    super.key,
-    required this.prompt,
-  });
+  const PromptDetailScreen({super.key, required this.prompt});
+
+  @override
+  State<PromptDetailScreen> createState() => _PromptDetailScreenState();
+}
+
+class _PromptDetailScreenState extends State<PromptDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  
+  final ScrollController _scrollController = ScrollController();
+  bool _isScrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    ));
+    
+    _scrollController.addListener(() {
+      setState(() {
+        _isScrolled = _scrollController.offset > 100;
+      });
+    });
+    
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
-      body: Consumer<AppProvider>(
-        builder: (context, provider, child) {
-          final category = provider.getCategoryById(prompt.categoryId);
-          // All prompts are unlocked in Pro version
-          final categoryColor = AppConstants.categoryColors[prompt.categoryId] ?? AppConstants.cardColor;
-
-          return CustomScrollView(
+      body: Stack(
+        children: [
+          // Main content
+          CustomScrollView(
+            controller: _scrollController,
             slivers: [
-              // Custom App Bar with Hero Section
+              // App bar
               SliverAppBar(
-                expandedHeight: 280,
+                expandedHeight: 200,
                 floating: false,
                 pinned: true,
-                backgroundColor: AppConstants.surfaceColor,
-                elevation: 0,
-                leading: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppConstants.surfaceColor.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(AppConstants.radiusS),
-                    boxShadow: [AppConstants.cardShadow],
-                  ),
-                  child: IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: AppConstants.textPrimary,
+                backgroundColor: _isScrolled 
+                  ? AppConstants.surfaceColor 
+                  : Colors.transparent,
+                elevation: _isScrolled ? 4 : 0,
+                leading: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppConstants.surfaceColor.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    child: const Icon(Icons.arrow_back_rounded),
                   ),
                 ),
                 actions: [
-                  Container(
-                    margin: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: prompt.isFavorite 
-                          ? AppConstants.vaultRed.withOpacity(0.1)
-                          : AppConstants.surfaceColor.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusS),
-                      boxShadow: [AppConstants.cardShadow],
-                    ),
-                    child: IconButton(
-                      onPressed: () => provider.toggleFavorite(prompt.id),
-                      icon: Icon(
-                        prompt.isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                        color: prompt.isFavorite ? AppConstants.vaultRed : AppConstants.textPrimary,
+                  IconButton(
+                    onPressed: _sharePrompt,
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppConstants.surfaceColor.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(20),
                       ),
+                      child: const Icon(Icons.share_rounded),
                     ),
                   ),
-                  Container(
-                    margin: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppConstants.surfaceColor.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusS),
-                      boxShadow: [AppConstants.cardShadow],
-                    ),
-                    child: IconButton(
-                      onPressed: () => _sharePrompt(context),
-                      icon: const Icon(
-                        Icons.share_rounded,
-                        color: AppConstants.textPrimary,
-                      ),
-                    ),
-                  ),
+                  const SizedBox(width: AppConstants.paddingM),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                         colors: [
-                          categoryColor.withOpacity(0.3),
-                          AppConstants.surfaceColor,
+                          AppConstants.vaultRed.withOpacity(0.1),
+                          AppConstants.primaryColor.withOpacity(0.05),
                         ],
                       ),
                     ),
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppConstants.paddingL),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 60), // Space for app bar
-                            
-                            // Category Badge
-                            if (category != null)
-                              Container(
+                    child: Stack(
+                      children: [
+                        // Pattern overlay
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: PatternPainter(
+                              color: AppConstants.vaultRed.withOpacity(0.05),
+                            ),
+                          ),
+                        ),
+                        // Content
+                        Positioned(
+                          bottom: 60,
+                          left: AppConstants.paddingL,
+                          right: AppConstants.paddingL,
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: SlideTransition(
+                              position: _slideAnimation,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Category badge
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppConstants.paddingM,
+                                      vertical: AppConstants.paddingS,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: AppConstants.vaultRedGradient,
+                                      borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                                    ),
+                                    child: Text(
+                                      _getCategoryName(),
+                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                        color: AppConstants.textOnDark,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppConstants.paddingM),
+                                  // Title
+                                  Text(
+                                    widget.prompt.title,
+                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppConstants.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Content
+              SliverToBoxAdapter(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppConstants.paddingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Description
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(AppConstants.paddingL),
+                            decoration: BoxDecoration(
+                              color: AppConstants.surfaceColor,
+                              borderRadius: BorderRadius.circular(AppConstants.radiusL),
+                              border: Border.all(
+                                color: AppConstants.textTertiary.withOpacity(0.1),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.description_rounded,
+                                      size: 20,
+                                      color: AppConstants.vaultRed,
+                                    ),
+                                    const SizedBox(width: AppConstants.paddingS),
+                                    Text(
+                                      'Description',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppConstants.vaultRed,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppConstants.paddingM),
+                                Text(
+                                  widget.prompt.description,
+                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    color: AppConstants.textSecondary,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          const SizedBox(height: AppConstants.paddingL),
+                          
+                          // Prompt content
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(AppConstants.paddingL),
+                            decoration: BoxDecoration(
+                              color: AppConstants.backgroundColor,
+                              borderRadius: BorderRadius.circular(AppConstants.radiusL),
+                              border: Border.all(
+                                color: AppConstants.vaultRed.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.auto_awesome_rounded,
+                                          size: 20,
+                                          color: AppConstants.vaultRed,
+                                        ),
+                                        const SizedBox(width: AppConstants.paddingS),
+                                        Text(
+                                          'AI Prompt',
+                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: AppConstants.vaultRed,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    IconButton(
+                                      onPressed: _copyPrompt,
+                                      icon: const Icon(Icons.copy_rounded),
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: AppConstants.vaultRed.withOpacity(0.1),
+                                        foregroundColor: AppConstants.vaultRed,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppConstants.paddingM),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(AppConstants.paddingL),
+                                  decoration: BoxDecoration(
+                                    color: AppConstants.surfaceColor,
+                                    borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                                  ),
+                                  child: SelectableText(
+                                    widget.prompt.content,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      fontFamily: 'monospace',
+                                      color: AppConstants.textPrimary,
+                                      height: 1.6,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          const SizedBox(height: AppConstants.paddingL),
+                          
+                          // Metadata
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildMetadataCard(
+                                  icon: Icons.schedule_rounded,
+                                  label: 'Time',
+                                  value: widget.prompt.estimatedTime,
+                                  color: AppConstants.infoColor,
+                                ),
+                              ),
+                              const SizedBox(width: AppConstants.paddingM),
+                              Expanded(
+                                child: _buildMetadataCard(
+                                  icon: Icons.trending_up_rounded,
+                                  label: 'Level',
+                                  value: widget.prompt.difficulty,
+                                  color: _getDifficultyColor(),
+                                ),
+                              ),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: AppConstants.paddingL),
+                          
+                          // Tags
+                          if (widget.prompt.tags.isNotEmpty) ...[
+                            Text(
+                              'Tags',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: AppConstants.paddingM),
+                            Wrap(
+                              spacing: AppConstants.paddingS,
+                              runSpacing: AppConstants.paddingS,
+                              children: widget.prompt.tags.map((tag) => Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppConstants.paddingM,
                                   vertical: AppConstants.paddingS,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: categoryColor,
-                                  borderRadius: BorderRadius.circular(AppConstants.radiusL),
+                                  color: AppConstants.infoColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(AppConstants.radiusM),
                                   border: Border.all(
-                                    color: AppConstants.textTertiary.withOpacity(0.2),
+                                    color: AppConstants.infoColor.withOpacity(0.3),
                                   ),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      category.icon,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                    const SizedBox(width: AppConstants.paddingS),
-                                    Text(
-                                      category.name,
-                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: AppConstants.textSecondary,
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  '#$tag',
+                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: AppConstants.infoColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                            
-                            const SizedBox(height: AppConstants.paddingM),
-                            
-                            // Title
-                            Text(
-                              prompt.title,
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppConstants.textPrimary,
-                              ),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
+                              )).toList(),
                             ),
-                            
-                            const SizedBox(height: AppConstants.paddingM),
-                            
-
+                            const SizedBox(height: AppConstants.paddingXL),
                           ],
-                        ),
+                        ],
                       ),
                     ),
                   ),
                 ),
               ),
-
-              // Content Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppConstants.paddingL),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Description Card
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(AppConstants.paddingL),
-                        decoration: BoxDecoration(
-                          color: AppConstants.surfaceColor,
-                          borderRadius: BorderRadius.circular(AppConstants.radiusM),
-                          border: Border.all(
-                            color: AppConstants.textTertiary.withOpacity(0.1),
-                          ),
-                          boxShadow: [AppConstants.cardShadow],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.description_rounded,
-                                  color: AppConstants.textSecondary,
-                                  size: AppConstants.iconSizeSmall,
-                                ),
-                                const SizedBox(width: AppConstants.paddingS),
-                                Text(
-                                  'Description',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppConstants.paddingM),
-                            Text(
-                              prompt.description,
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                height: 1.6,
-                                color: AppConstants.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: AppConstants.paddingL),
-
-                      // Metadata Row
-                      Row(
-                        children: [
-                          // Difficulty Badge
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(AppConstants.paddingM),
-                              decoration: BoxDecoration(
-                                color: AppConstants.difficultyColors[prompt.difficulty]?.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(AppConstants.radiusM),
-                                border: Border.all(
-                                  color: AppConstants.difficultyColors[prompt.difficulty]?.withOpacity(0.3) ?? 
-                                         AppConstants.textTertiary.withOpacity(0.2),
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.trending_up_rounded,
-                                    color: AppConstants.difficultyColors[prompt.difficulty],
-                                    size: AppConstants.iconSizeMedium,
-                                  ),
-                                  const SizedBox(height: AppConstants.paddingS),
-                                  Text(
-                                    'Difficulty',
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: AppConstants.textTertiary,
-                                    ),
-                                  ),
-                                  Text(
-                                    prompt.difficulty,
-                                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: AppConstants.difficultyColors[prompt.difficulty],
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(width: AppConstants.paddingM),
-
-                          // Time Badge
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(AppConstants.paddingM),
-                              decoration: BoxDecoration(
-                                color: AppConstants.infoColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(AppConstants.radiusM),
-                                border: Border.all(
-                                  color: AppConstants.infoColor.withOpacity(0.3),
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.schedule_rounded,
-                                    color: AppConstants.infoColor,
-                                    size: AppConstants.iconSizeMedium,
-                                  ),
-                                  const SizedBox(height: AppConstants.paddingS),
-                                  Text(
-                                    'Duration',
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: AppConstants.textTertiary,
-                                    ),
-                                  ),
-                                  Text(
-                                    prompt.estimatedTime,
-                                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: AppConstants.infoColor,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: AppConstants.paddingL),
-
-                      // Tags Section
-                      if (prompt.tags.isNotEmpty) ...[
-                        Text(
-                          'Tags',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: AppConstants.paddingM),
-                        Wrap(
-                          spacing: AppConstants.paddingS,
-                          runSpacing: AppConstants.paddingS,
-                          children: prompt.tags.map((tag) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppConstants.paddingM,
-                                vertical: AppConstants.paddingS,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppConstants.cardColor,
-                                borderRadius: BorderRadius.circular(AppConstants.radiusL),
-                                border: Border.all(
-                                  color: AppConstants.textTertiary.withOpacity(0.2),
-                                ),
-                              ),
-                              child: Text(
-                                '#$tag',
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: AppConstants.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: AppConstants.paddingL),
-                      ],
-
-                      // Content Section
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppConstants.surfaceColor,
-                          borderRadius: BorderRadius.circular(AppConstants.radiusM),
-                          border: Border.all(
-                            color: AppConstants.successColor.withOpacity(0.3),
-                            width: 2,
-                          ),
-                          boxShadow: [AppConstants.cardShadow],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Header
-                            Container(
-                              padding: const EdgeInsets.all(AppConstants.paddingL),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF0FDF4), // Light green background
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(AppConstants.radiusM),
-                                  topRight: Radius.circular(AppConstants.radiusM),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.check_circle_rounded,
-                                    color: AppConstants.successColor,
-                                    size: AppConstants.iconSizeSmall,
-                                  ),
-                                  const SizedBox(width: AppConstants.paddingS),
-                                  Text(
-                                    'Prompt Content',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: AppConstants.successColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            
-                            // Content
-                            Padding(
-                              padding: const EdgeInsets.all(AppConstants.paddingL),
-                              child: _buildUnlockedContent(context),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: AppConstants.paddingXL),
-                    ],
-                  ),
-                ),
-              ),
             ],
-          );
-        },
+          ),
+          
+          // Floating action buttons
+          Positioned(
+            bottom: 30,
+            right: 20,
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  heroTag: 'favorite',
+                  onPressed: _toggleFavorite,
+                  backgroundColor: _isFavorite() 
+                    ? AppConstants.errorColor 
+                    : AppConstants.surfaceColor,
+                  foregroundColor: _isFavorite() 
+                    ? AppConstants.textOnDark 
+                    : AppConstants.textSecondary,
+                  child: Icon(_isFavorite() ? Icons.favorite : Icons.favorite_border),
+                ),
+                const SizedBox(height: AppConstants.paddingM),
+                FloatingActionButton(
+                  heroTag: 'copy',
+                  onPressed: _copyPrompt,
+                  backgroundColor: AppConstants.vaultRed,
+                  foregroundColor: AppConstants.textOnDark,
+                  child: const Icon(Icons.copy_rounded),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-
-
-  Widget _buildUnlockedContent(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SelectableText(
-          prompt.content,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            height: 1.6,
-            color: AppConstants.textPrimary,
+  Widget _buildMetadataCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.paddingL),
+      decoration: BoxDecoration(
+        color: AppConstants.surfaceColor,
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: AppConstants.iconSizeMedium,
           ),
-        ),
-        const SizedBox(height: AppConstants.paddingL),
-        
-        // Action Buttons
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _copyToClipboard(context),
-                icon: const Icon(Icons.copy_rounded),
-                label: const Text('Copy'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingM),
-                ),
-              ),
+          const SizedBox(height: AppConstants.paddingS),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
-            const SizedBox(width: AppConstants.paddingM),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _sharePrompt(context),
-                icon: const Icon(Icons.share_rounded),
-                label: const Text('Share'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppConstants.primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingM),
-                ),
-              ),
+          ),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppConstants.textSecondary,
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
-  void _copyToClipboard(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: prompt.content));
+  String _getCategoryName() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    final category = provider.categories.firstWhere(
+      (cat) => cat.id == widget.prompt.categoryId,
+      orElse: () => provider.categories.first,
+    );
+    return category.name;
+  }
+
+  Color _getDifficultyColor() {
+    switch (widget.prompt.difficulty.toLowerCase()) {
+      case 'beginner':
+        return AppConstants.successColor;
+      case 'intermediate':
+        return AppConstants.warningColor;
+      case 'advanced':
+        return AppConstants.errorColor;
+      case 'expert':
+        return AppConstants.vaultRed;
+      default:
+        return AppConstants.infoColor;
+    }
+  }
+
+  bool _isFavorite() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    return provider.favoritePrompts.contains(widget.prompt.id);
+  }
+
+  void _toggleFavorite() {
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    provider.toggleFavorite(widget.prompt.id);
+    AppUtils.mediumHaptic();
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Prompt copied to clipboard!'),
-          ],
+        content: Text(
+          _isFavorite() ? 'Added to favorites' : 'Removed from favorites',
         ),
         backgroundColor: AppConstants.successColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.radiusS),
-        ),
+        duration: const Duration(seconds: 1),
       ),
     );
   }
 
-  void _sharePrompt(BuildContext context) {
-    Share.share(
-      '${prompt.title}\n\n${prompt.description}\n\nGet more AI prompts at Aivellum!',
-      subject: prompt.title,
+  void _copyPrompt() {
+    Clipboard.setData(ClipboardData(text: widget.prompt.content));
+    AppUtils.mediumHaptic();
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Prompt copied to clipboard'),
+        backgroundColor: AppConstants.successColor,
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 
+  void _sharePrompt() {
+    Share.share(
+      '${widget.prompt.title}\n\n${widget.prompt.description}\n\nGet more AI prompts with Aivellum Pro!',
+      subject: widget.prompt.title,
+    );
+  }
+}
 
+class PatternPainter extends CustomPainter {
+  final Color color;
+
+  PatternPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    const spacing = 30.0;
+    
+    for (double i = -size.height; i < size.width + size.height; i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

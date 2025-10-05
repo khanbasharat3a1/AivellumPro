@@ -4,6 +4,7 @@ import '../constants/app_constants.dart';
 import '../providers/app_provider.dart';
 import 'home_screen.dart';
 import 'categories_screen.dart';
+import 'discover_screen.dart';
 import 'favorites_screen.dart';
 import 'settings_screen.dart';
 
@@ -20,6 +21,7 @@ class MainScreen extends StatelessWidget {
             children: const [
               HomeScreen(),
               CategoriesScreen(),
+              DiscoverScreen(),
               FavoritesScreen(),
               SettingsScreen(),
             ],
@@ -64,21 +66,31 @@ class MainScreen extends StatelessWidget {
                     ),
                     _buildNavItem(
                       context,
-                      icon: Icons.favorite_rounded,
-                      outlineIcon: Icons.favorite_outline_rounded,
-                      label: 'Favorites',
+                      icon: Icons.explore_rounded,
+                      outlineIcon: Icons.explore_outlined,
+                      label: 'Discover',
                       index: 2,
                       isSelected: provider.currentIndex == 2,
                       onTap: () => provider.setCurrentIndex(2),
+                      isPremium: true,
+                    ),
+                    _buildNavItem(
+                      context,
+                      icon: Icons.favorite_rounded,
+                      outlineIcon: Icons.favorite_outline_rounded,
+                      label: 'Favorites',
+                      index: 3,
+                      isSelected: provider.currentIndex == 3,
+                      onTap: () => provider.setCurrentIndex(3),
                     ),
                     _buildNavItem(
                       context,
                       icon: Icons.settings_rounded,
                       outlineIcon: Icons.settings_outlined,
                       label: 'Settings',
-                      index: 3,
-                      isSelected: provider.currentIndex == 3,
-                      onTap: () => provider.setCurrentIndex(3),
+                      index: 4,
+                      isSelected: provider.currentIndex == 4,
+                      onTap: () => provider.setCurrentIndex(4),
                     ),
                   ],
                 ),

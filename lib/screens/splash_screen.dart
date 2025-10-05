@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                               ],
                             ),
                             child: Image.asset(
-                              'assets/images/logo2.png',
+                              'assets/images/logo4.png',
                               width: 60,
                               height: 60,
                               color: AppConstants.textOnDark,

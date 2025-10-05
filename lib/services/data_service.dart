@@ -93,6 +93,10 @@ class DataService {
     return _prompts.where((prompt) => prompt.isFavorite).toList();
   }
 
+  List<String> getFavoritePromptIds() {
+    return _prompts.where((prompt) => prompt.isFavorite).map((prompt) => prompt.id).toList();
+  }
+
   List<Prompt> getUnlockedPrompts() {
     return _prompts.where((prompt) => prompt.isUnlocked).toList();
   }

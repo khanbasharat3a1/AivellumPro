@@ -265,7 +265,7 @@ class HomeScreen extends StatelessWidget {
                                 boxShadow: [AppConstants.premiumShadow],
                               ),
                               child: Image.asset(
-                                'assets/images/logo2.png',
+                                'assets/images/logo4.png',
                                 width: 40,
                                 height: 40,
                                 color: AppConstants.textOnDark,

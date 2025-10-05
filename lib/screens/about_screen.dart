@@ -53,7 +53,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       boxShadow: [AppConstants.premiumShadow],
                     ),
                     child: Image.asset(
-                      'assets/images/logo2.png',
+                      'assets/images/logo4.png',
                       width: 50,
                       height: 50,
                       color: AppConstants.textOnDark,
