@@ -1,0 +1,98 @@
+===============================================================================
+  FOR AI ASSISTANTS: HOW TO ADD PROMPTS TO AIVELLUM PRO DATABASE
+===============================================================================
+
+STEP 1: Open ai_add_prompts.py
+-------------------------------
+Edit the PROMPTS_TO_ADD list with new prompts.
+
+STEP 2: Format Your Prompts
+----------------------------
+Each prompt should follow this structure:
+
+{
+    'category_id': 'marketing',           # See categories below
+    'title': 'Your Prompt Title',
+    'description': 'Brief description',
+    'content': 'Full prompt content...',
+    'is_premium': 0,                      # 0 = free, 1 = premium
+    'difficulty': 'Medium',               # Easy, Medium, Hard
+    'estimated_time': '5 min',
+    'tags': ['tag1', 'tag2', 'tag3']
+}
+
+STEP 3: Run the Script
+-----------------------
+Windows: double-click quick_add.bat
+OR
+Command: python ai_add_prompts.py
+
+AVAILABLE CATEGORIES:
+---------------------
+- money_making          (Money Making)
+- business              (Business & Strategy)
+- freelancing           (Freelancing)
+- marketing             (Marketing & Sales)
+- writing               (Writing)
+- content               (Content Creation)
+- development           (Development & Tech)
+- productivity          (Productivity & Planning)
+- social_media          (Social Media)
+- learning              (Learning & Education)
+- psychology            (Psychology)
+- fitness               (Fitness & Health)
+- ai_art                (AI Art Generation)
+- research              (Research & Analysis)
+- crypto                (Crypto & Trading)
+- nft                   (NFT Creation)
+- voice                 (Voice Cloning)
+- automation            (AI Automation)
+- vr                    (Virtual Reality)
+
+EXAMPLE USAGE:
+--------------
+PROMPTS_TO_ADD = [
+    {
+        'category_id': 'marketing',
+        'title': 'Email Marketing Campaign Generator',
+        'description': 'Create high-converting email sequences',
+        'content': 'Generate a 5-email welcome sequence for [PRODUCT/SERVICE] targeting [AUDIENCE]. Include subject lines, preview text, and CTAs.',
+        'is_premium': 0,
+        'difficulty': 'Medium',
+        'estimated_time': '10 min',
+        'tags': ['email', 'marketing', 'automation']
+    },
+    {
+        'category_id': 'content',
+        'title': 'Blog Post Outline Generator',
+        'description': 'Create SEO-optimized blog outlines',
+        'content': 'Create a detailed blog post outline for [TOPIC] with H2/H3 headings, key points, and SEO keywords.',
+        'is_premium': 0,
+        'difficulty': 'Easy',
+        'estimated_time': '5 min',
+        'tags': ['blogging', 'seo', 'content']
+    }
+]
+
+IMPORTANT NOTES:
+----------------
+1. IDs are auto-generated - don't specify them
+2. Tags should be lowercase and relevant
+3. Content can be multi-line strings
+4. Always run export after adding prompts (script does this automatically)
+5. The script updates BOTH .db and .json files
+
+TESTING:
+--------
+After adding prompts:
+1. Run: flutter pub get
+2. Run: flutter run
+3. Check if new prompts appear in the app
+
+TROUBLESHOOTING:
+----------------
+- If prompts don't appear: Check category_id matches available categories
+- If app crashes: Verify JSON syntax in ai_add_prompts.py
+- If database locked: Close any SQLite browser tools
+
+===============================================================================

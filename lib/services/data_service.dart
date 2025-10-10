@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/category.dart';
 import '../models/prompt.dart';
 import 'database_service.dart';
+import 'sqlite_service.dart';
 
 class DataService {
   static final DataService _instance = DataService._internal();
@@ -23,40 +24,26 @@ class DataService {
 
   Future<void> loadData() async {
     try {
-      print('Loading data from assets...');
-      final String jsonString = await rootBundle.loadString('assets/data/prompts_database.json');
-      print('JSON loaded, length: ${jsonString.length}');
-      
-      final Map<String, dynamic> data = json.decode(jsonString);
-      print('JSON parsed successfully');
+      print('Loading data from SQLite database...');
       
       // Pro version: Always have access
       _hasLifetimeAccess = true;
       _hasActiveSubscription = true;
 
-      if (data['categories'] != null) {
-        _categories = (data['categories'] as List)
-            .map((json) => Category.fromJson(json))
-            .toList();
-        print('Categories loaded: ${_categories.length}');
-      }
+      _categories = await SQLiteService.getCategories();
+      print('Categories loaded: ${_categories.length}');
 
-      if (data['prompts'] != null) {
-        _prompts = (data['prompts'] as List)
-            .map((json) => Prompt.fromJson(json))
-            .toList();
-        print('Prompts loaded: ${_prompts.length}');
-      }
+      _prompts = await SQLiteService.getPrompts();
+      print('Prompts loaded: ${_prompts.length}');
 
-      _pricing = data['pricing'] ?? {};
-      _appConfig = data['app_config'] ?? {};
-      print('Pricing and config loaded');
+      _pricing = {};
+      _appConfig = {'version': '1.3.0'};
+      print('Data loaded from SQLite');
 
       await _loadUserData();
       print('User data loaded successfully');
     } catch (e) {
       print('Error loading data: $e');
-      // Initialize with empty data to prevent crashes
       _categories = [];
       _prompts = [];
       _pricing = {};

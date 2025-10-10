@@ -4,6 +4,7 @@ class Category {
   final String icon;
   final String description;
   final bool isPrimary;
+  final int promptCount;
 
   Category({
     required this.id,
@@ -11,6 +12,7 @@ class Category {
     required this.icon,
     required this.description,
     this.isPrimary = false,
+    this.promptCount = 0,
   });
 
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class Category {
       icon: json['icon'],
       description: json['description'],
       isPrimary: json['isPrimary'] ?? false,
+      promptCount: json['promptCount'] ?? 0,
     );
   }
 
@@ -30,6 +33,7 @@ class Category {
       'icon': icon,
       'description': description,
       'isPrimary': isPrimary,
+      'promptCount': promptCount,
     };
   }
 }

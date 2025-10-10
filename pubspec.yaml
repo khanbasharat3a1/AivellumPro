@@ -42,6 +42,7 @@ dependencies:
   # Storage & Data
   shared_preferences: ^2.2.3
   path_provider: ^2.1.3
+  sqflite: ^2.3.0
   
 
   
@@ -82,6 +83,8 @@ flutter:
   # Assets
   assets:
     - assets/data/
+    - assets/data/prompts.db
+    - assets/data/prompts_database.json
     - assets/images/
     - assets/images/logo4.png
     - assets/animations/

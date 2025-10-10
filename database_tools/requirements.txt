@@ -1,0 +1,1 @@
+# No external dependencies needed - using Python's built-in sqlite3
