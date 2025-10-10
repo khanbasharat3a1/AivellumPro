@@ -25,7 +25,11 @@ class AppProvider with ChangeNotifier {
   bool get hasActiveSubscription => _hasActiveSubscription;
   bool get isUserSubscribed => _hasLifetimeAccess || _hasActiveSubscription;
   
-  List<Category> get categories => _dataService.categories;
+  List<Category> get categories {
+    final cats = _dataService.categories.toList();
+    cats.sort((a, b) => b.promptCount.compareTo(a.promptCount));
+    return cats;
+  }
   List<Prompt> get prompts => _dataService.prompts;
   Map<String, dynamic> get pricing => {}; // No pricing in Pro version
   Map<String, dynamic> get appConfig => _dataService.appConfig;

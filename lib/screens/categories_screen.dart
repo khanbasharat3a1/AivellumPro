@@ -8,13 +8,42 @@ import '../widgets/search_bar_widget.dart';
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
+  Future<bool> _onWillPop(AppProvider provider) async {
+    // If search is active, clear search
+    if (provider.searchQuery.isNotEmpty) {
+      provider.setSearchQuery('');
+      return false;
+    }
+    
+    // If category is selected, go back to all categories
+    if (provider.selectedCategoryId != null) {
+      provider.setSelectedCategory(null);
+      return false;
+    }
+    
+    // Otherwise, go to home screen
+    provider.setCurrentIndex(0);
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
-      body: SafeArea(
-        child: Consumer<AppProvider>(
-          builder: (context, provider, child) {
+    return Consumer<AppProvider>(
+      builder: (context, provider, child) {
+        return WillPopScope(
+          onWillPop: () => _onWillPop(provider),
+          child: Scaffold(
+            backgroundColor: AppConstants.backgroundColor,
+            body: SafeArea(
+              child: _buildContent(context, provider),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, AppProvider provider) {
             final searchResults = provider.searchQuery.isNotEmpty 
                 ? provider.getSearchResults() 
                 : <dynamic>[];
@@ -23,7 +52,7 @@ class CategoriesScreen extends StatelessWidget {
                 ? provider.getPromptsByCategory(provider.selectedCategoryId!)
                 : <dynamic>[];
 
-            return CustomScrollView(
+    return CustomScrollView(
               slivers: [
                 // App Bar
                 SliverAppBar(
@@ -218,10 +247,6 @@ class CategoriesScreen extends StatelessWidget {
                   const SliverToBoxAdapter(child: SizedBox(height: AppConstants.paddingXL)),
                 ],
               ],
-            );
-          },
-        ),
-      ),
     );
   }
 }

@@ -1,0 +1,61 @@
+from add_prompts import add_prompts_batch
+from db_manager import export_to_json, init_database
+
+# Focus on categories with fewer prompts
+PROMPTS = [
+    # AI Art & Design (Currently 4 - Add 16)
+    {'category_id': 'ai_art', 'title': 'AI Art Prompt Engineering', 'description': 'Master AI art prompts', 'content': 'Create AI art prompts for [STYLE]. Include: keywords, modifiers, artists, techniques, lighting, composition.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '10 min', 'tags': ['ai art', 'prompts', 'midjourney']},
+    {'category_id': 'ai_art', 'title': 'Character Design Prompts', 'description': 'Design consistent characters', 'content': 'Create character design prompts for [CHARACTER]. Include: features, clothing, pose, expression, background.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '10 min', 'tags': ['character', 'design', 'ai art']},
+    {'category_id': 'ai_art', 'title': 'Logo Design Prompts', 'description': 'Generate logo concepts', 'content': 'Create logo prompts for [BRAND]. Include: style, colors, symbols, typography, mood.', 'is_premium': 0, 'difficulty': 'Beginner', 'estimated_time': '8 min', 'tags': ['logo', 'branding', 'design']},
+    {'category_id': 'ai_art', 'title': 'Product Photography Prompts', 'description': 'Create product images', 'content': 'Generate product photo prompts for [PRODUCT]. Include: angle, lighting, background, style, mood.', 'is_premium': 0, 'difficulty': 'Beginner', 'estimated_time': '8 min', 'tags': ['product', 'photography', 'ecommerce']},
+    {'category_id': 'ai_art', 'title': 'AI Art Business Strategy', 'description': 'Monetize AI art skills', 'content': 'Build AI art business. Include: services, pricing, portfolio, clients, marketing, platforms, scaling.', 'is_premium': 1, 'difficulty': 'Advanced', 'estimated_time': '30 min', 'tags': ['ai art', 'business', 'monetization']},
+    {'category_id': 'ai_art', 'title': 'NFT Art Collection Creator', 'description': 'Create NFT collections', 'content': 'Design NFT collection with AI. Include: concept, traits, variations, rarity, metadata, generation.', 'is_premium': 1, 'difficulty': 'Advanced', 'estimated_time': '35 min', 'tags': ['nft', 'ai art', 'crypto']},
+    
+    # AI Automation (Currently 3 - Add 12)
+    {'category_id': 'ai_automation', 'title': 'Workflow Automation Ideas', 'description': 'Automate repetitive tasks', 'content': 'Identify automation opportunities for [BUSINESS]. Include: tasks, tools, implementation, ROI.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '10 min', 'tags': ['automation', 'efficiency', 'productivity']},
+    {'category_id': 'ai_automation', 'title': 'Chatbot Script Creator', 'description': 'Design chatbot conversations', 'content': 'Create chatbot script for [PURPOSE]. Include: greeting, questions, responses, fallbacks.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '10 min', 'tags': ['chatbot', 'ai', 'automation']},
+    {'category_id': 'ai_automation', 'title': 'Email Automation Setup', 'description': 'Automate email marketing', 'content': 'Setup email automation for [BUSINESS]. Include: sequences, triggers, segments, content.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '15 min', 'tags': ['email', 'automation', 'marketing']},
+    {'category_id': 'ai_automation', 'title': 'AI Automation Business System', 'description': 'Build automation agency', 'content': 'Build AI automation business. Include: services, clients, tools, pricing, delivery, scaling to $50K+/month.', 'is_premium': 1, 'difficulty': 'Expert', 'estimated_time': '40 min', 'tags': ['automation', 'business', 'ai']},
+    
+    # Crypto & Trading (Currently 3 - Add 12)
+    {'category_id': 'crypto_trading', 'title': 'Crypto Trading Strategy', 'description': 'Trade crypto profitably', 'content': 'Create crypto trading strategy for [COIN]. Include: entry, exit, risk management, position sizing.', 'is_premium': 0, 'difficulty': 'Advanced', 'estimated_time': '15 min', 'tags': ['crypto', 'trading', 'strategy']},
+    {'category_id': 'crypto_trading', 'title': 'DeFi Yield Strategy', 'description': 'Earn passive crypto income', 'content': 'Find DeFi yield opportunities for [CAPITAL]. Include: protocols, APY, risks, strategy.', 'is_premium': 0, 'difficulty': 'Advanced', 'estimated_time': '15 min', 'tags': ['defi', 'yield', 'passive income']},
+    {'category_id': 'crypto_trading', 'title': 'NFT Flipping Strategy', 'description': 'Flip NFTs for profit', 'content': 'Create NFT flipping strategy. Include: research, entry, exit, tools, risk management.', 'is_premium': 0, 'difficulty': 'Advanced', 'estimated_time': '15 min', 'tags': ['nft', 'trading', 'profit']},
+    {'category_id': 'crypto_trading', 'title': 'Crypto Portfolio Strategy', 'description': 'Build balanced crypto portfolio', 'content': 'Create crypto portfolio for [RISK LEVEL]. Include: allocation, coins, rebalancing, risk management, tracking.', 'is_premium': 1, 'difficulty': 'Expert', 'estimated_time': '35 min', 'tags': ['crypto', 'portfolio', 'investing']},
+    
+    # NFT Creation (Currently 3 - Add 12)
+    {'category_id': 'nft_creation', 'title': 'NFT Project Concept', 'description': 'Create NFT project idea', 'content': 'Develop NFT project concept for [THEME]. Include: art style, utility, community, roadmap.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '15 min', 'tags': ['nft', 'concept', 'project']},
+    {'category_id': 'nft_creation', 'title': 'NFT Marketing Strategy', 'description': 'Market NFT project', 'content': 'Create NFT marketing plan. Include: Discord, Twitter, influencers, whitelist, launch.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '15 min', 'tags': ['nft', 'marketing', 'launch']},
+    {'category_id': 'nft_creation', 'title': 'NFT Smart Contract Guide', 'description': 'Understand NFT contracts', 'content': 'Learn NFT smart contracts for [PLATFORM]. Include: standards, functions, deployment, verification.', 'is_premium': 0, 'difficulty': 'Advanced', 'estimated_time': '15 min', 'tags': ['nft', 'smart contracts', 'blockchain']},
+    {'category_id': 'nft_creation', 'title': 'NFT Project Launch System', 'description': 'Launch successful NFT project', 'content': 'Launch NFT project from concept to mint. Include: art, smart contract, community, marketing, mint strategy, post-launch. Full NFT launch system.', 'is_premium': 1, 'difficulty': 'Expert', 'estimated_time': '45 min', 'tags': ['nft', 'launch', 'project']},
+    
+    # Virtual Reality (Currently 2 - Add 12)
+    {'category_id': 'virtual_reality', 'title': 'VR Experience Concept', 'description': 'Design VR experiences', 'content': 'Create VR experience for [PURPOSE]. Include: concept, interactions, environment, user journey.', 'is_premium': 0, 'difficulty': 'Advanced', 'estimated_time': '15 min', 'tags': ['vr', 'experience', 'design']},
+    {'category_id': 'virtual_reality', 'title': 'Metaverse Strategy', 'description': 'Build metaverse presence', 'content': 'Create metaverse strategy for [BRAND]. Include: platform, presence, experiences, monetization.', 'is_premium': 0, 'difficulty': 'Advanced', 'estimated_time': '15 min', 'tags': ['metaverse', 'strategy', 'virtual']},
+    {'category_id': 'virtual_reality', 'title': 'VR Content Creation', 'description': 'Create VR content', 'content': 'Create VR content for [PURPOSE]. Include: 360 video, 3D models, interactions, optimization.', 'is_premium': 0, 'difficulty': 'Advanced', 'estimated_time': '15 min', 'tags': ['vr', 'content', 'creation']},
+    {'category_id': 'virtual_reality', 'title': 'VR Business Strategy', 'description': 'Build VR business', 'content': 'Build VR business in [NICHE]. Include: services, equipment, clients, pricing, marketing, scaling to $50K+/month.', 'is_premium': 1, 'difficulty': 'Expert', 'estimated_time': '40 min', 'tags': ['vr', 'business', 'strategy']},
+    
+    # Voice Cloning (Currently 2 - Add 12)
+    {'category_id': 'voice_cloning', 'title': 'Voice Clone Setup', 'description': 'Clone voices with AI', 'content': 'Clone voice for [PURPOSE]. Include: recording, training, testing, usage, ethics.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '10 min', 'tags': ['voice', 'ai', 'audio']},
+    {'category_id': 'voice_cloning', 'title': 'AI Voice Content Creation', 'description': 'Create content with AI voices', 'content': 'Create content using AI voices for [PURPOSE]. Include: script, voice selection, generation, editing.', 'is_premium': 0, 'difficulty': 'Beginner', 'estimated_time': '10 min', 'tags': ['voice', 'content', 'ai']},
+    {'category_id': 'voice_cloning', 'title': 'Voice Acting Business', 'description': 'Monetize voice cloning', 'content': 'Build voice business with AI. Include: services, clients, pricing, tools, marketing, scaling.', 'is_premium': 1, 'difficulty': 'Advanced', 'estimated_time': '35 min', 'tags': ['voice', 'business', 'monetization']},
+    
+    # Fitness & Health (Currently 6 - Add 14)
+    {'category_id': 'fitness_health', 'title': 'Workout Plan Creator', 'description': 'Design custom workouts', 'content': 'Create workout plan for [GOAL]. Include: exercises, sets, reps, schedule, progression.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '15 min', 'tags': ['workout', 'fitness', 'exercise']},
+    {'category_id': 'fitness_health', 'title': 'Meal Plan Generator', 'description': 'Create nutrition plans', 'content': 'Create meal plan for [GOAL]. Include: calories, macros, meals, recipes, shopping list.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '15 min', 'tags': ['nutrition', 'diet', 'meal plan']},
+    {'category_id': 'fitness_health', 'title': 'Fitness Tracker Setup', 'description': 'Track fitness progress', 'content': 'Setup fitness tracking for [GOAL]. Include: metrics, tools, schedule, analysis.', 'is_premium': 0, 'difficulty': 'Beginner', 'estimated_time': '10 min', 'tags': ['tracking', 'progress', 'fitness']},
+    {'category_id': 'fitness_health', 'title': 'Yoga Routine Creator', 'description': 'Design yoga sequences', 'content': 'Create yoga routine for [GOAL]. Include: poses, duration, breathing, modifications.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '15 min', 'tags': ['yoga', 'flexibility', 'wellness']},
+    {'category_id': 'fitness_health', 'title': 'Fitness Coaching Business', 'description': 'Build online fitness coaching', 'content': 'Build fitness coaching business. Include: niche, programs, pricing, clients, delivery, scaling to $50K+/month.', 'is_premium': 1, 'difficulty': 'Expert', 'estimated_time': '40 min', 'tags': ['fitness', 'coaching', 'business']},
+    
+    # Psychology (Currently 13 - Add 12)
+    {'category_id': 'psychology', 'title': 'Habit Formation System', 'description': 'Build lasting habits', 'content': 'Create habit system for [GOAL]. Include: triggers, routine, reward, tracking, maintenance.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '10 min', 'tags': ['habits', 'behavior', 'change']},
+    {'category_id': 'psychology', 'title': 'Mindset Shift Framework', 'description': 'Change limiting beliefs', 'content': 'Shift mindset for [GOAL]. Include: beliefs, reframes, affirmations, actions, tracking.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '10 min', 'tags': ['mindset', 'beliefs', 'growth']},
+    {'category_id': 'psychology', 'title': 'Emotional Intelligence Guide', 'description': 'Develop EQ skills', 'content': 'Improve emotional intelligence for [CONTEXT]. Include: self-awareness, regulation, empathy, social skills.', 'is_premium': 0, 'difficulty': 'Intermediate', 'estimated_time': '15 min', 'tags': ['eq', 'emotions', 'intelligence']},
+    {'category_id': 'psychology', 'title': 'Psychology for Marketers', 'description': 'Apply psychology to marketing', 'content': 'Use psychology in marketing for [BUSINESS]. Include: triggers, biases, emotions, persuasion, conversion optimization.', 'is_premium': 1, 'difficulty': 'Advanced', 'estimated_time': '35 min', 'tags': ['psychology', 'marketing', 'conversion']},
+]
+
+init_database()
+print(f"Adding {len(PROMPTS)} prompts to balance categories...")
+add_prompts_batch(PROMPTS)
+export_to_json()
+print("✅ Category balance complete!")

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_constants.dart';
 import '../providers/app_provider.dart';
@@ -8,14 +9,55 @@ import 'discover_screen.dart';
 import 'favorites_screen.dart';
 import 'settings_screen.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  DateTime? _lastBackPress;
+
+  Future<bool> _onWillPop(BuildContext context, AppProvider provider) async {
+    // If not on home screen, go to home
+    if (provider.currentIndex != 0) {
+      provider.setCurrentIndex(0);
+      return false;
+    }
+    
+    // If on home screen, show exit confirmation with double tap
+    final now = DateTime.now();
+    if (_lastBackPress == null || now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
+      _lastBackPress = now;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Press back again to exit'),
+            ],
+          ),
+          backgroundColor: AppConstants.textPrimary,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, provider, child) {
-        return Scaffold(
+        return WillPopScope(
+          onWillPop: () => _onWillPop(context, provider),
+          child: Scaffold(
           body: IndexedStack(
             index: provider.currentIndex,
             children: const [
@@ -96,6 +138,7 @@ class MainScreen extends StatelessWidget {
                 ),
               ),
             ),
+          ),
           ),
         );
       },

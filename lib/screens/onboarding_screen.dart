@@ -15,22 +15,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingPage> _pages = [
     OnboardingPage(
-      title: 'Welcome to Aivellum Pro',
-      description: 'Discover premium AI prompts designed to boost your creativity and productivity',
-      icon: '🚀',
-      gradient: [AppConstants.vaultRed, AppConstants.primaryColor],
+      title: '500+ Professional AI Prompts',
+      subtitle: 'Complete Library, Zero Limitations',
+      description: 'Access the entire collection of handcrafted prompts across 19 specialized categories. No locked content, no paywalls, no surprises.',
+      icon: Icons.library_books_rounded,
+      features: [
+        'All 500+ prompts unlocked',
+        '19 complete categories',
+        'Weekly updates included',
+        'Works with all AI platforms',
+      ],
     ),
     OnboardingPage(
-      title: 'All Prompts Unlocked',
-      description: 'Access thousands of premium AI prompts without any restrictions or limitations',
-      icon: '🔓',
-      gradient: [AppConstants.successColor, AppConstants.infoColor],
+      title: 'One Purchase, Lifetime Access',
+      subtitle: 'No Subscriptions, No Ads, No Limits',
+      description: 'Pay once and own forever. Completely ad-free interface designed for focus. Full offline access after download.',
+      icon: Icons.workspace_premium_rounded,
+      features: [
+        'No monthly fees ever',
+        'Zero advertisements',
+        'Full offline access',
+        'Priority support included',
+      ],
     ),
     OnboardingPage(
-      title: 'No Ads, No Limits',
-      description: 'Enjoy a clean, distraction-free experience with all features included',
-      icon: '✨',
-      gradient: [AppConstants.warningColor, AppConstants.vaultRed],
+      title: 'Professional Quality Content',
+      subtitle: 'Written by Specialists, Tested & Optimized',
+      description: 'Every prompt is crafted by experts and tested across multiple AI platforms for real-world applications.',
+      icon: Icons.verified_rounded,
+      features: [
+        'Expert-written prompts',
+        'Tested on ChatGPT, Claude, Gemini',
+        'Optimized for results',
+        'Privacy-first approach',
+      ],
     ),
   ];
 
@@ -51,21 +69,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Skip button
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppConstants.paddingL),
-                  child: TextButton(
-                    onPressed: _completeOnboarding,
-                    child: Text(
-                      'Skip',
-                      style: TextStyle(
-                        color: AppConstants.textSecondary,
-                        fontWeight: FontWeight.w500,
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Aivellum Pro',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppConstants.textPrimary,
                       ),
                     ),
-                  ),
+                    if (_currentPage < _pages.length - 1)
+                      TextButton(
+                        onPressed: _completeOnboarding,
+                        child: Text(
+                          'Skip',
+                          style: TextStyle(
+                            color: AppConstants.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
 
@@ -86,75 +114,77 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
 
               // Page indicators
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _pages.length,
-                  (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == index ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? AppConstants.vaultRed
-                          : AppConstants.textTertiary.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(4),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _pages.length,
+                    (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 32 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index
+                            ? AppConstants.vaultRed
+                            : AppConstants.textTertiary.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: AppConstants.paddingXL),
-
-              // Action buttons
+              // Action button
               Padding(
-                padding: const EdgeInsets.all(AppConstants.paddingL),
-                child: Row(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+                child: Column(
                   children: [
-                    if (_currentPage > 0)
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: BorderSide(color: AppConstants.vaultRed.withOpacity(0.3)),
-                          ),
-                          child: const Text('Previous'),
+                    ElevatedButton(
+                      onPressed: _currentPage == _pages.length - 1
+                          ? _completeOnboarding
+                          : () {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppConstants.vaultRed,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
+                        elevation: 0,
                       ),
-                    if (_currentPage > 0) const SizedBox(width: AppConstants.paddingM),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _currentPage == _pages.length - 1
-                            ? _completeOnboarding
-                            : () {
-                                _pageController.nextPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppConstants.vaultRed,
-                          foregroundColor: AppConstants.textOnDark,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppConstants.radiusM),
-                          ),
-                        ),
-                        child: Text(
-                          _currentPage == _pages.length - 1 ? 'Get Started' : 'Next',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
+                      child: Text(
+                        _currentPage == _pages.length - 1 ? 'Get Started' : 'Continue',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
                         ),
                       ),
                     ),
+                    if (_currentPage > 0) ...[
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        child: Text(
+                          'Back',
+                          style: TextStyle(
+                            color: AppConstants.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -166,61 +196,120 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPage(OnboardingPage page) {
-    return Padding(
-      padding: const EdgeInsets.all(AppConstants.paddingL),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon container
+          const SizedBox(height: 20),
+          
+          // Icon
           Container(
-            width: 120,
-            height: 120,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: page.gradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+              gradient: AppConstants.vaultRedGradient,
+              borderRadius: BorderRadius.circular(25),
               boxShadow: [
                 BoxShadow(
-                  color: page.gradient.first.withOpacity(0.3),
+                  color: AppConstants.vaultRed.withOpacity(0.25),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: Center(
-              child: Text(
-                page.icon,
-                style: const TextStyle(fontSize: 48),
-              ),
+            child: Icon(
+              page.icon,
+              size: 50,
+              color: Colors.white,
             ),
           ),
 
-          const SizedBox(height: AppConstants.paddingXL * 2),
+          const SizedBox(height: 32),
 
           // Title
           Text(
             page.title,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: AppConstants.textPrimary,
+              height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
 
-          const SizedBox(height: AppConstants.paddingL),
+          const SizedBox(height: 8),
+
+          // Subtitle
+          Text(
+            page.subtitle,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppConstants.vaultRed,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          const SizedBox(height: 16),
 
           // Description
           Text(
             page.description,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: AppConstants.textSecondary,
-              height: 1.5,
+              height: 1.6,
             ),
             textAlign: TextAlign.center,
           ),
+
+          const SizedBox(height: 32),
+
+          // Features
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppConstants.surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppConstants.textTertiary.withOpacity(0.1),
+              ),
+            ),
+            child: Column(
+              children: page.features.map((feature) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: AppConstants.vaultRed.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.check_rounded,
+                          size: 16,
+                          color: AppConstants.vaultRed,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          feature,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: AppConstants.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -244,14 +333,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 class OnboardingPage {
   final String title;
+  final String subtitle;
   final String description;
-  final String icon;
-  final List<Color> gradient;
+  final IconData icon;
+  final List<String> features;
 
   OnboardingPage({
     required this.title,
+    required this.subtitle,
     required this.description,
     required this.icon,
-    required this.gradient,
+    required this.features,
   });
 }

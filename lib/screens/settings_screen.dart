@@ -8,12 +8,30 @@ import '../providers/app_provider.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
+  Future<bool> _onWillPop(AppProvider provider) async {
+    provider.setCurrentIndex(0);
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
-      body: SafeArea(
-        child: Consumer<AppProvider>(
+    return Consumer<AppProvider>(
+      builder: (context, provider, child) {
+        return WillPopScope(
+          onWillPop: () => _onWillPop(provider),
+          child: Scaffold(
+            backgroundColor: AppConstants.backgroundColor,
+            body: SafeArea(
+              child: _buildContent(context, provider),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, AppProvider provider) {
+    return Consumer<AppProvider>(
           builder: (context, provider, child) {
             return CustomScrollView(
               slivers: [
@@ -205,9 +223,7 @@ class SettingsScreen extends StatelessWidget {
               ],
             );
           },
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildSectionTitle(BuildContext context, String title) {

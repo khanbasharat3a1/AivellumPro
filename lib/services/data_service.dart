@@ -75,6 +75,12 @@ class DataService {
   List<Prompt> getPromptsByCategory(String categoryId) {
     return _prompts.where((prompt) => prompt.categoryId == categoryId).toList();
   }
+  
+  List<Category> getCategoriesSortedByPromptCount() {
+    final categories = _categories.toList();
+    categories.sort((a, b) => b.promptCount.compareTo(a.promptCount));
+    return categories;
+  }
 
   List<Prompt> getFavoritePrompts() {
     return _prompts.where((prompt) => prompt.isFavorite).toList();

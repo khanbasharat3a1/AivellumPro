@@ -7,12 +7,30 @@ import '../widgets/prompt_card.dart';
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
 
+  Future<bool> _onWillPop(AppProvider provider) async {
+    provider.setCurrentIndex(0);
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
-      body: SafeArea(
-        child: Consumer<AppProvider>(
+    return Consumer<AppProvider>(
+      builder: (context, provider, child) {
+        return WillPopScope(
+          onWillPop: () => _onWillPop(provider),
+          child: Scaffold(
+            backgroundColor: AppConstants.backgroundColor,
+            body: SafeArea(
+              child: _buildContent(context, provider),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, AppProvider provider) {
+    return Consumer<AppProvider>(
           builder: (context, provider, child) {
             final favoritePrompts = provider.favoritePrompts;
 
@@ -154,8 +172,6 @@ class FavoritesScreen extends StatelessWidget {
               ],
             );
           },
-        ),
-      ),
-    );
+        );
   }
 }

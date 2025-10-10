@@ -96,11 +96,28 @@ class _DiscoverScreenState extends State<DiscoverScreen> with TickerProviderStat
     super.dispose();
   }
 
+  Future<bool> _onWillPop(AppProvider provider) async {
+    provider.setCurrentIndex(0);
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
-      body: Consumer<AppProvider>(
+    return Consumer<AppProvider>(
+      builder: (context, provider, child) {
+        return WillPopScope(
+          onWillPop: () => _onWillPop(provider),
+          child: Scaffold(
+            backgroundColor: AppConstants.backgroundColor,
+            body: _buildBody(context, provider),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(BuildContext context, AppProvider provider) {
+    return Consumer<AppProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return _buildLoadingState();
@@ -225,8 +242,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with TickerProviderStat
             ],
           );
         },
-      ),
-    );
+      );
   }
 
   Widget _buildPromptCard(Prompt prompt, int index) {
